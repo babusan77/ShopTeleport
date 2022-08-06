@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("ShopTeleport", "babu77", "1.0.0")]
+    [Info("ShopTeleport", "babu77", "1.0.1")]
     [Description("simple teleport plugin")]
     
     public class ShopTeleport : RustPlugin
@@ -35,7 +35,7 @@ namespace Oxide.Plugins
                 {"NoPerm", "You don't have a permission."},
                 {"UpdatePos", "The current position is saved."},
                 {"NotSet", "The teleport destination is not set."},
-                {"BeforeTeleport", "It will teleport in 15 seconds."}
+                {"BeforeTeleport", "You will teleport to shop in 15 seconds."}
             }, this);
         }
         
