@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("ShopTeleport", "babu77", "1.0.1")]
+    [Info("ShopTeleport", "babu77", "1.1.0")]
     [Description("simple teleport plugin")]
     
     public class ShopTeleport : RustPlugin
