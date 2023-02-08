@@ -1,7 +1,7 @@
 # ShopTeleport
 ShopTeleportは、BaburyServerのサーバプラグインです。
 
-ショップにてレポートするやつ
+ショップにテレポートするやつ
 
 ## コマンド
 |コマンド|説明|
