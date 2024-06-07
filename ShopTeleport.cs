@@ -1,4 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿/* 更新履歴
+ *  1.0.0
+ *   初期版
+ *
+ *  1.0.1
+ *   言語ファイルの修正
+ *
+ *  1.1.0
+ *   フレームワークの更新
+ *
+ *  1.2.0
+ *   キャンセルコマンドの追加
+ */
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Oxide.Core;
@@ -11,7 +25,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("ShopTeleport", "babu77", "1.1.0")]
+    [Info("ShopTeleport", "babu77", "1.2.0")]
     [Description("simple teleport plugin")]
     
     public class ShopTeleport : RustPlugin
@@ -22,6 +36,7 @@ namespace Oxide.Plugins
         const string PermSet = "shopteleport.set";
         private DynamicConfigFile _shopPosData;
         private Dictionary<string, Vector3> _posData;
+        private Dictionary<string, Timer> _userTimer = new Dictionary<string, Timer>();
         #endregion
         
         #region Configurations
@@ -35,7 +50,11 @@ namespace Oxide.Plugins
                 {"NoPerm", "You don't have a permission."},
                 {"UpdatePos", "The current position is saved."},
                 {"NotSet", "The teleport destination is not set."},
-                {"BeforeTeleport", "You will teleport to shop in 15 seconds."}
+                {"BeforeTeleport", "You will teleport to shop in 15 seconds."},
+                {"AlreadyStartTimer", "The teleport command is already being executed at present."},
+                {"NotStartTimer", "There are no teleportation instructions that can be cancelled."},
+                {"CancelTimer", "Teleport command cancelled."},
+                {"CancelTimerFailure", "Cancellation failed."}
             }, this);
         }
         
@@ -133,14 +152,48 @@ namespace Oxide.Plugins
             Vector3 pos;
             if (_posData.TryGetValue("pos", out pos))
             {
-                timer.Once(15f, () =>
+                if (_userTimer.ContainsKey(player.UserIDString))
+                {
+                    SendMessage(player, lang.GetMessage("AlreadyStartTimer", this));
+                    return;
+                }
+                
+                _userTimer.Add(player.UserIDString, 
+                    timer.Once(15f, () =>
                 {
                     Teleport(player, pos);
-                });
+                    Timer userTimer;
+                    if (!_userTimer.TryGetValue(player.UserIDString, out userTimer)) return;
+                    userTimer.Destroy();
+                    _userTimer.Remove(player.UserIDString);
+                }));
             }
             else
             {
                 SendMessage(player, lang.GetMessage("NotSet", this));
+            }
+        }
+
+        private void TeleportCancel(BasePlayer player)
+        {
+            Timer userTimer;
+            if (!_userTimer.TryGetValue(player.UserIDString, out userTimer))
+            {
+                SendMessage(player, lang.GetMessage("NotStartTimer", this));
+                return;
+            }
+            else
+            {
+                userTimer.Destroy();
+                if (userTimer.Destroyed)
+                {
+                    _userTimer.Remove(player.UserIDString);
+                    SendMessage(player, lang.GetMessage("CancelTimer", this));
+                }
+                else
+                {
+                    SendMessage(player, lang.GetMessage("CancelTimerFailure", this));
+                }
             }
         }
         #endregion
@@ -164,6 +217,17 @@ namespace Oxide.Plugins
                 else
                 {
                     SetPos(player);
+                }
+            }
+            else if (0 < args.Length && (args[0].ToLower().Equals("cancel")||args[0].ToLower().Equals("c")))
+            {
+                if (!permission.UserHasPermission(player.UserIDString, PermUse))
+                {
+                    SendMessage(player, lang.GetMessage("NoPerm", this));
+                }
+                else
+                {
+                    TeleportCancel(player);
                 }
             }
             else
