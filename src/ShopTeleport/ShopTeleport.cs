@@ -10,6 +10,9 @@
  *
  *  1.2.0
  *   キャンセルコマンドの追加
+ *
+ *  1.2.1
+ *   player.SendNetworkUpdateImmediate();の仕様変更に対応
  */
 
 using Newtonsoft.Json;
@@ -25,7 +28,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("ShopTeleport", "babu77", "1.2.0")]
+    [Info("ShopTeleport", "babu77", "1.2.1")]
     [Description("simple teleport plugin")]
     
     public class ShopTeleport : RustPlugin
@@ -128,7 +131,7 @@ namespace Oxide.Plugins
             if (player.net?.connection != null)
                 player.SetPlayerFlag(BasePlayer.PlayerFlags.ReceivingSnapshot, true);
             player.UpdateNetworkGroup();
-            player.SendNetworkUpdateImmediate(false);
+            player.SendNetworkUpdateImmediate();
             if (player.net?.connection == null) return;
             try
             {
