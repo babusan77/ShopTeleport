@@ -10,6 +10,14 @@
  *
  *  1.2.0
  *   キャンセルコマンドの追加
+ *
+ *  1.2.1
+ *   player.SendNetworkUpdateImmediate();の仕様変更に対応
+ *
+ *  1.3.0
+ *   ClientRPCの修正
+ *   SendFullSnapshot→SendCompleteSnapshotの修正
+ * 
  */
 
 using Newtonsoft.Json;
@@ -25,7 +33,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("ShopTeleport", "babu77", "1.2.0")]
+    [Info("ShopTeleport", "babu77", "1.3.0")]
     [Description("simple teleport plugin")]
     
     public class ShopTeleport : RustPlugin
@@ -103,7 +111,7 @@ namespace Oxide.Plugins
         public void Teleport(BasePlayer player, Vector3 position)
         {
             if (player.net?.connection != null)
-                player.ClientRPCPlayer(null, player, "StartLoading");
+                player.ClientRPC(RpcTarget.Player("StartLoading", player));
             
             StartSleeping(player);
             player.SetParent(null, true, true);
@@ -124,11 +132,11 @@ namespace Oxide.Plugins
         private void UpgradeNw(BasePlayer player,Vector3 position)
         {
             if (player.net?.connection != null)
-                player.ClientRPCPlayer(null, player, "ForcePositionTo", position);
+                player.ClientRPC(RpcTarget.Player("ForcePositionTo", player), position);
             if (player.net?.connection != null)
                 player.SetPlayerFlag(BasePlayer.PlayerFlags.ReceivingSnapshot, true);
             player.UpdateNetworkGroup();
-            player.SendNetworkUpdateImmediate(false);
+            player.SendNetworkUpdateImmediate();
             if (player.net?.connection == null) return;
             try
             {
@@ -137,7 +145,7 @@ namespace Oxide.Plugins
             catch
             {
             }
-            player.SendFullSnapshot();
+            player.SendCompleteSnapshot();
         }
         
         private void SetPos(BasePlayer player)
